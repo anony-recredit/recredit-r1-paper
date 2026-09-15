@@ -1,0 +1,38 @@
+data:
+  train_files: ${RECREDIT_ROOT}/data/parquet/stage1_train.parquet
+  val_files: ${RECREDIT_ROOT}/data/parquet/stage1_val.parquet
+  train_batch_size: 1
+  micro_batch_size_per_gpu: 1
+  max_length: 2048
+  max_image_side: 448
+  truncation: right
+  num_workers: 2
+
+model:
+  path: ${RECREDIT_ROOT}/models/Qwen2.5-VL-7B-Instruct
+  precision: bf16
+  attn_implementation: sdpa
+  gradient_checkpointing: true
+
+optim:
+  lr: 1.0e-5
+  betas: [0.9, 0.95]
+  weight_decay: 0.01
+  warmup_steps_ratio: 0.03
+  clip_grad: 1.0
+
+trainer:
+  stage: stage1
+  seed: 1
+  total_epochs: 3
+  log_freq: 5
+  save_freq: -1
+  test_freq: 1
+  save_dir: ${RECREDIT_ROOT}/ckpts/stage1
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

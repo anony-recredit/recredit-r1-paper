@@ -1,0 +1,26 @@
+{
+  "version": "rh20t_action_metrics_v1",
+  "unit": "next_action_step",
+  "pose_required_for_format": false,
+  "pose_status": "not_applicable_no_comparable_pred_pose",
+  "object_free_verbs": ["move", "end"],
+  "object_required_verbs": ["pick", "place"],
+  "key_action_verbs": ["pick", "place"],
+  "canonical_verbs": ["pick", "place", "move", "end"],
+  "format_error_categories": [
+    "empty",
+    "unparseable",
+    "unknown_verb",
+    "missing_required_object",
+    "invalid_required_object_on_object_free",
+    "multiple_actions",
+    "invalid_numeric",
+    "wrong_pose_dimension",
+    "nan_pose"
+  ],
+  "notes": [
+    "GT action.objectType is uniformly 'Object'; canonical objects come from the frozen instruction map.",
+    "Predictions in existing OL trees are discrete verb strings. Pose-tolerance is N/A.",
+    "Parse failures remain in all semantic denominators."
+  ]
+}

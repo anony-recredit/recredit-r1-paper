@@ -1,0 +1,23 @@
+{
+  "version": "rh20t_action_metrics_v1",
+  "canonical": ["pick", "place", "move", "end"],
+  "alias_to_canonical": {
+    "pick": "pick",
+    "pickup": "pick",
+    "pick_up": "pick",
+    "grasp": "pick",
+    "grab": "pick",
+    "take": "pick",
+    "place": "place",
+    "put": "place",
+    "drop": "place",
+    "throw": "place",
+    "move": "move",
+    "navigate": "move",
+    "navigate_to_shelf": "move",
+    "end": "end",
+    "stop": "end",
+    "done": "end",
+    "finish": "end"
+  }
+}

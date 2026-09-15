@@ -1,0 +1,29 @@
+{
+  "source": "remote:/path/to/RECREDIT_ROOT",
+  "protocol": "openloop_multiturn_teacher_force_v2",
+  "eval_script": "eval_rh20t_offline_action.py",
+  "run_script": "run_rh20t_q2q3_dpo_offline.sh",
+  "local": {
+    "pack": "/path/to/RECREDIT_ROOT/data/rh20t_recredit_cfg3_pc_n100",
+    "results": "/path/to/RECREDIT_ROOT/results/rh20t_cfg3_pc_n100",
+    "q3_full_ckpt": "/path/to/RECREDIT_ROOT/ckpts/wt_ablation_v5_qwen3/full/best",
+    "er_code": "/path/to/RECREDIT_ROOT/code/Embodied-Omni/embodied_reasoner",
+    "python": "${RECREDIT_PYTHON:-python}",
+    "n_gpus": 1,
+    "port": 18001
+  },
+  "env": {
+    "IMAGE_RESOLUTION": "351232",
+    "MIN_PIXELS": "3136",
+    "MAX_PIXELS": "351232",
+    "BAN_TOKEN_220": "1",
+    "SELF_CONSISTENCY_K": "1",
+    "MODEL_TYPE": "qwen3_vl"
+  },
+  "refill": {
+    "do_not_drop_denominator": true,
+    "only_request_failed_steps": true,
+    "keep_successful_cached_steps": true,
+    "save_full_response": true
+  }
+}
