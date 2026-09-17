@@ -43,6 +43,16 @@ class MassTests(unittest.TestCase):
         np.testing.assert_allclose(uni["perc_weight"], typ["perc_weight"])
         np.testing.assert_allclose(uni["reas_weight"], typ["reas_weight"])
 
+    def test_invert_swaps_type(self):
+        df = pd.DataFrame({"q_t": [0.10, 0.90], "w_t": [1.0, 1.0]})
+        typ = assign_failure_weights(df, eta=0.2, scale=1.0, routing="q_proxy")
+        inv = assign_failure_weights(df, eta=0.2, scale=1.0, routing="q_proxy_invert")
+        np.testing.assert_allclose(typ["m_t"], inv["m_t"])
+        np.testing.assert_allclose(typ["perc_weight"], inv["reas_weight"])
+        np.testing.assert_allclose(typ["reas_weight"], inv["perc_weight"])
+        np.testing.assert_allclose(-inv["perc_weight"], [0.02, 0.18])
+        np.testing.assert_allclose(-inv["reas_weight"], [0.18, 0.02])
+
 
 if __name__ == "__main__":
     unittest.main()

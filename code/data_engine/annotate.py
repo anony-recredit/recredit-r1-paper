@@ -200,8 +200,8 @@ def annotate_trajectory(
     qs = [s["q_t"] for s in steps]
     ws = spatial_weights(qs, R)
     sp, sr = type_scores(qs, R)
-    A_traj = float(R - 0.5) * 2.0
-    ap, ar = gated_advantages(qs, ws, R, A_traj, lam=lambda_type)
+    A_traj = float(2 * int(R) - 1)  # paper: A_t = 2 R_L2 - 1
+    ap, ar = gated_advantages(ws, sp, sr, A_traj, lam=lambda_type)
     mean_q = sum(qs) / max(len(qs), 1)
 
     for s, w, spp, srr, app, arr in zip(steps, ws, sp, sr, ap, ar):

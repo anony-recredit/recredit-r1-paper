@@ -5,7 +5,7 @@ Two-stage training from the paper, implemented as a verl FSDP recipe:
 | Stage | Paper objective | Implementation |
 |-------|-----------------|----------------|
 | I geometric warm-start | \(\mathcal{L}_I=-\sum_t q_t[\log\pi_P(g_t\mid o_t)+\log\pi_R(\textit{think}_t,a_t\mid o_t,g_t)]\) | token-weighted SFT; all response tokens × \(q_t\) |
-| II outcome-guided recrediting | \(\mathcal{L}_{II}=-\sum_t(A_t^{\mathrm{perc}}\log\pi_P+ \hat A_t^{\mathrm{reas}}\log\pi_R)\) | same trainer; grounding span × \(A^{\mathrm{perc}}\), thought+action × \(\hat A^{\mathrm{reas}}=\mu_t m_t A^{\mathrm{reas}}\) |
+| II outcome-guided recrediting | \(\mathcal{L}_{II}=-\sum_t(A_t^{\mathrm{perc}}\log\pi_P+ \hat A_t^{\mathrm{reas}}\log\pi_R)\) **(Eq. 10)** | same trainer; grounding span × \(A^{\mathrm{perc}}\), thought+action × \(\hat A^{\mathrm{reas}}=\mu_t m_t A^{\mathrm{reas}}\); \(A^k\) from **Eq. 8** via `data_engine.reward.gated_advantages` |
 
 Backbone: **Qwen2.5-VL-7B-Instruct** (VLM required for RGB OTA). Framework: [verl-project/verl](https://github.com/verl-project/verl) `v0.4.1`.
 

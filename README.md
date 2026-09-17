@@ -85,10 +85,10 @@ export RECREDIT_PYTHON=python
 
 | Component | Role |
 |-----------|------|
-| `code/data_engine/` | Offline autofill of auditable credit fields from OTA + AABB metadata |
-| `code/train/` | Parquet conversion + Stage I / Stage II CE training entrypoints |
+| `code/data_engine/` | Offline autofill of auditable credit fields from OTA + AABB metadata (**Eqs. 7–8** in `reward.py`) |
+| `code/train/` | Parquet conversion + Stage I / Stage II **Eq. (10)** signed token-weighted CE |
 | `code/v28_pipeline/` | Stage-II closerep packs, attribution DPO pair mining, n781 eval wrapper |
-| `code/failctrl_v3_gr_mass_matched/` | Optional failure-control GR mass-matched training patches |
+| `code/failctrl_v3_gr_mass_matched/` | Optional failure-control GR (unlikelihood; **not** Eq. 10) |
 | `code/rh20t_eval/` + `evaluation/rh20t/` | Offline RH20T action-matching diagnostic tooling |
 
 ## Citation

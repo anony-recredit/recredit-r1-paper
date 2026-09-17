@@ -219,8 +219,8 @@ def build_one(
     qs = [s["q_t"] for s in ex["steps"]]
     ws = spatial_weights(qs, R)
     sp, sr = type_scores(qs, R)
-    A_traj = float(R - 0.5) * 2.0
-    ap, ar = gated_advantages(qs, ws, R, A_traj, lam=1.0)
+    A_traj = float(2 * int(R) - 1)  # paper: A_t = 2 R_L2 - 1
+    ap, ar = gated_advantages(ws, sp, sr, A_traj, lam=1.0)
     for s, w, spp, srr, app, arr in zip(ex["steps"], ws, sp, sr, ap, ar):
         s.update(
             {

@@ -79,6 +79,12 @@ def spatial_weights(qs: Sequence[float], R_L2: int, eps: float = 1e-8) -> List[f
 
 
 def type_scores(qs: Sequence[float], R_L2: int, eps: float = 1e-8):
+    """Paper Eq. (7): independently normalize γ^k over the trajectory.
+
+    γ^{perc}_t = q_t if R_L2=1 else (1-q_t);  γ^{reas}_t = q_t.
+    s^k_t = γ^k_t / sum_i γ^k_i.
+    On success this yields s^{perc}=s^{reas}=w_t.
+    """
     if R_L2 == 0:
         s_perc = [1.0 - q for q in qs]
         s_reas = list(qs)
@@ -89,16 +95,47 @@ def type_scores(qs: Sequence[float], R_L2: int, eps: float = 1e-8):
     return [x / sp for x in s_perc], [x / sr for x in s_reas]
 
 
-def gated_advantages(qs, ws, R_L2: int, A_traj: float, lam: float = 1.0):
+def gated_advantages(
+    ws: Sequence[float],
+    s_perc: Sequence[float],
+    s_reas: Sequence[float],
+    A_traj: float,
+    lam: float = 1.0,
+):
+    """Paper Eq. (8): A^k_t = ((1-λ) w_t + λ s^k_t) A_t.
+
+    Uses the independently normalized type scores s^k from ``type_scores``.
+    Do **not** multiply w_t by raw q_t / (1-q_t) (that produced q_t^2-like
+    coefficients and diverged from the paper).
+    """
+    if not (len(ws) == len(s_perc) == len(s_reas)):
+        raise ValueError("ws, s_perc, s_reas must have equal length")
     ap, ar = [], []
-    for q, w in zip(qs, ws):
-        if R_L2 == 0:
-            ap.append(w * ((1 - lam) + lam * (1 - q)) * A_traj)
-            ar.append(w * ((1 - lam) + lam * q) * A_traj)
-        else:
-            ap.append(w * ((1 - lam) + lam * q) * A_traj)
-            ar.append(w * ((1 - lam) + lam * q) * A_traj)
+    for w, sp, sr in zip(ws, s_perc, s_reas):
+        ap.append(((1.0 - lam) * float(w) + lam * float(sp)) * A_traj)
+        ar.append(((1.0 - lam) * float(w) + lam * float(sr)) * A_traj)
     return ap, ar
+
+
+def paper_eq8_coefficients(
+    qs: Sequence[float],
+    R_L2: int,
+    lam: float = 1.0,
+    eps: float = 1e-8,
+):
+    """Convenience: w_t, s^k_t, A^k_t exactly as Eqs. (5)/(7)/(8)."""
+    ws = spatial_weights(qs, R_L2, eps=eps)
+    sp, sr = type_scores(qs, R_L2, eps=eps)
+    A_traj = float(2 * int(R_L2) - 1)  # At = 2 R_L2 - 1 ∈ {-1,+1}
+    ap, ar = gated_advantages(ws, sp, sr, A_traj, lam=lam)
+    return {
+        "w_t": ws,
+        "s_t_perc": sp,
+        "s_t_reas": sr,
+        "A_traj": A_traj,
+        "A_t_perc": ap,
+        "A_t_reas": ar,
+    }
 
 
 def error_type(q: float, R_L2: int) -> str:

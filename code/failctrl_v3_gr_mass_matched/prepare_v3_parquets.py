@@ -5,8 +5,9 @@ Success rows are copied from the frozen Full filt pack.
 Failure coefficients use a shared step budget then route:
 
     m_t = min(eta * S * w_t, 0.5)
-    UNI:  (m/2, m/2)
-    TYPE: (m(1-q), m q)
+    UNI:     (m/2, m/2)
+    TYPE:    (m(1-q), m q)
+    INVERT:  (m q, m(1-q))   # swap perc/reas; same m_t / mass as TYPE
 
 Think-empty failure steps are dropped from both arms together.
 This script never reads n781 / C105 / RH20T as training rows.
@@ -93,6 +94,10 @@ def assign_failure_weights(df: pd.DataFrame, eta: float, scale: float, routing: 
     elif routing == "q_proxy":
         cg = m * (1.0 - q)
         cr = m * q
+    elif routing == "q_proxy_invert":
+        # Paper-symmetric Invert: flip type routing, keep step mass m_t.
+        cg = m * q
+        cr = m * (1.0 - q)
     else:
         raise ValueError(routing)
     out = df.copy()
@@ -172,7 +177,11 @@ def main() -> None:
         "failure_src_sha256": _sha256_file(args.failure_src),
     }
 
-    for routing, arm in (("uniform_half", "neg_uniform"), ("q_proxy", "type_neg")):
+    for routing, arm in (
+        ("uniform_half", "neg_uniform"),
+        ("q_proxy", "type_neg"),
+        ("q_proxy_invert", "type_neg_invert"),
+    ):
         fail_w = assign_failure_weights(fail, args.eta, args.weight_scale, routing)
         # Keep success weights exactly as Full; do not mix into one train parquet.
         dest = args.out_root / f"eta{int(round(args.eta * 100)):03d}" / arm
@@ -189,14 +198,15 @@ def main() -> None:
             "saturation_frac": sat,
             "sum_abs_perc": float(fail_w["perc_weight"].abs().sum()),
             "sum_abs_reas": float(fail_w["reas_weight"].abs().sum()),
+            "routing": routing,
         }
 
-    uni_m = report["neg_uniform"]["sum_m_t"]
-    typ_m = report["type_neg"]["sum_m_t"]
-    rel = abs(uni_m - typ_m) / max(uni_m, 1e-12)
-    report["mass_rel_diff"] = rel
-    if rel > 1e-12:
-        raise SystemExit(f"arm mass mismatch {rel}")
+    masses = {a: report[a]["sum_m_t"] for a in ("neg_uniform", "type_neg", "type_neg_invert")}
+    base_m = masses["neg_uniform"]
+    rels = {a: abs(m - base_m) / max(base_m, 1e-12) for a, m in masses.items()}
+    report["mass_rel_diff"] = rels
+    if any(r > 1e-12 for r in rels.values()):
+        raise SystemExit(f"arm mass mismatch {rels}")
     args.out_root.mkdir(parents=True, exist_ok=True)
     out_rep = args.out_root / f"PREPARE_REPORT_eta{int(round(args.eta * 100)):03d}.json"
     out_rep.write_text(json.dumps(report, indent=2))

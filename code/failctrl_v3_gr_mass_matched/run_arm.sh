@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Train one failctrl_v3 GR arm from Stage-I. Does not use the live CE tree.
 set -euo pipefail
-ARM="${ARM:?neg_uniform|type_neg}"
+ARM="${ARM:?neg_uniform|type_neg|type_neg_invert}"
 SEED="${SEED:?}"
 ETA="${ETA:?}"
 PHASE="${PHASE:?pilot|formal}"
