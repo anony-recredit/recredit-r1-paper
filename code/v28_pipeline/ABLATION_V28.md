@@ -1,7 +1,7 @@
 # Ablation v28 — Stage-II closerep + attribution DPO
 
 ## Narrative
-- Keep Stage-II Recredit fields \(q_t,w_t,e_t\); Attr-DPO only optimizes attributed preferences.
+- Keep Stage-II Recredit fields `q_t`, `w_t`, `e_t`; Attr-DPO only optimizes attributed preferences.
 - Freeze Stage-I (`ablation_v27/stage1/best`).
 - Stage-II data: long-horizon positives + closerep upsample / window clips.
 - DPO: attribution gates + hard quotas (thinking / closerep seeing); cap generic seeing.
