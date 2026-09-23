@@ -280,6 +280,7 @@ that **type-aware preference direction** matters beyond running DPO alone.
 | Prepare + DPO train | `prepare_p1_all.sh`, `run_p1_dpo.sh`, `run_p1_all.sh` |
 | n781 eval | `run_p1_eval_n781.sh`, `run_p1_eval_all.sh`, `run_p1_resume_eval.sh` |
 
+> Reported means use r1+r2 × three seeds.
 
 ## Citation
 
