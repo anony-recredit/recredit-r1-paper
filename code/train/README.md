@@ -1,13 +1,39 @@
 # Recredit-R1 training recipe (verl-style)
 
-Two-stage training from the paper, implemented as a verl FSDP recipe:
+Two-stage training from the paper, implemented as a verl FSDP recipe.
 
-| Stage | Paper objective | Implementation |
-|-------|-----------------|----------------|
-| I geometric warm-start | \(\mathcal{L}_I=-\sum_t q_t[\log\pi_P(g_t\mid o_t)+\log\pi_R(\textit{think}_t,a_t\mid o_t,g_t)]\) | token-weighted SFT; all response tokens × \(q_t\) |
-| II outcome-guided recrediting | \(\mathcal{L}_{II}=-\sum_t(A_t^{\mathrm{perc}}\log\pi_P+ \hat A_t^{\mathrm{reas}}\log\pi_R)\) **(Eq. 10)** | same trainer; grounding span × \(A^{\mathrm{perc}}\), thought+action × \(\hat A^{\mathrm{reas}}=\mu_t m_t A^{\mathrm{reas}}\); \(A^k\) from **Eq. 8** via `data_engine.reward.gated_advantages` |
+Backbone: **Qwen2.5-VL-7B-Instruct** (VLM required for RGB OTA).  
+Framework: [verl-project/verl](https://github.com/verl-project/verl) `v0.4.1`.
 
-Backbone: **Qwen2.5-VL-7B-Instruct** (VLM required for RGB OTA). Framework: [verl-project/verl](https://github.com/verl-project/verl) `v0.4.1`.
+## Stage I — geometric warm-start (Eq. 6)
+
+Paper objective:
+
+![Eq. 6 Stage I geometric warm-start](../../assets/eq_LI.png)
+
+| | |
+|--|--|
+| **What it does** | `q_t`-weighted imitation on short/mid-horizon clips |
+| **Implementation** | Token-weighted SFT: every response token is scaled by step prior `q_t` |
+| **Script** | `run_stage1.sh` |
+
+## Stage II — outcome-guided recrediting CE (Eq. 10)
+
+Paper objective:
+
+![Eq. 10 Stage II recrediting CE](../../assets/eq_LII_ce.png)
+
+Span coefficients (Eq. 8) and optional discourse gate on the reasoning/action span:
+
+![Eq. 8 gated coefficients and reas hat](../../assets/eq_Ak_brief.png)
+
+| | |
+|--|--|
+| **What it does** | Apply gated signed coefficients from `data_engine` as token weights |
+| **Implementation** | Same trainer as Stage I. Grounding span × `A_t_perc`; thought+action span × `A_hat_reas = μ_t · m_t · A_t_reas`. Coefficients come from `data_engine.reward.gated_advantages` / `paper_eq8_coefficients` (Eq. 8). Canonical Full CE uses success rows only (`neg_scale=0`), where `A_t_perc = A_t_reas = w_t`. |
+| **Script** | `run_stage2.sh` |
+
+Optional attribution DPO is stacked **inside** Stage II (Eq. 11), not a third stage — see repo-root README.
 
 ## Suggested layout
 
